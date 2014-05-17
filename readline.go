@@ -185,3 +185,8 @@ func ProcessCompletion(textC *C.char, lineC *C.char, start, end int) **C.char {
 
 	return (**C.char)(ptr)
 }
+
+// LineBuffer returns the line gathered so far.
+func LineBuffer() string {
+	return C.GoString(C.rl_line_buffer)
+}

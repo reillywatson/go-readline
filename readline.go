@@ -8,8 +8,8 @@
 package readline
 
 /*
-#cgo darwin CFLAGS: -I/usr/local/Cellar/readline/6.2.4/include/
-#cgo darwin LDFLAGS: -L/usr/local/Cellar/readline/6.2.4/lib/
+#cgo darwin CFLAGS: -I/usr/local/Cellar/readline/6.3.8/include/
+#cgo darwin LDFLAGS: -L/usr/local/Cellar/readline/6.3.8/lib/
 #cgo LDFLAGS: -lreadline
 
 #include <stdio.h>

@@ -35,11 +35,19 @@ import (
 func init() {
 	C.rl_attempted_completion_function = (*C.rl_completion_func_t)(C._go_readline_completer_shim)
 	C.rl_catch_sigwinch = 0
+	C.rl_catch_signals = 0
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGWINCH)
+	signal.Notify(c, syscall.SIGWINCH, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGSTOP, syscall.SIGTTIN, syscall.SIGTTOU)
 	go func() {
-		for _ = range c {
-			ResizeTerminal()
+		for s := range c {
+			switch s {
+			case syscall.SIGWINCH:
+				ResizeTerminal()
+			case syscall.SIGSTOP:
+				C.rl_cleanup_after_signal()
+			default:
+				Cleanup()
+			}
 		}
 	}()
 }
@@ -189,4 +197,21 @@ func ProcessCompletion(textC *C.char, lineC *C.char, start, end int) **C.char {
 // LineBuffer returns the line gathered so far.
 func LineBuffer() string {
 	return C.GoString(C.rl_line_buffer)
+}
+
+func FreeLine() {
+	C.rl_free_line_state()
+}
+
+var customCleanup = func() {}
+
+// SetCleanupFunc allows a custom handler to be called after getting a termination signal, before exiting.
+func SetCleanupFunc(fn func()) {
+	customCleanup = fn
+}
+
+func Cleanup() {
+	customCleanup()
+	C.rl_cleanup_after_signal()
+	os.Exit(0)
 }
